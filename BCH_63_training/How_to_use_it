@@ -17,7 +17,9 @@ Notably, the switches lines 48 and 49  in globalmap.py file must be turned on be
     set_map('generate_extended_parity_check_matrix',True)
 Afterwards, turning off the switch at line 49 forever: set_map('generate_extended_parity_check_matrix',False) while line 48 is the switch to decide using standard 
 parity-check  matrix or not. Then the saved optimized parity-check matrix on disk will be called by other modules if needed.
-4) Click Run buttion of entry file BCH_63_training.py, it will optimize parity-check matrix firstly if set_map('generate_extended_parity_check_matrix',False) in 
+4) A revised NMS-1 is presented in ms_decoder_dense.py file, where three types of automorphism permutations are utilized to pack inputs and unpacked after each
+iteration to make a tentative hard-decision.
+5) Click Run buttion of entry file BCH_63_training.py, it will optimize parity-check matrix firstly if set_map('generate_extended_parity_check_matrix',False) in 
 globalmap file, then optimization of NMS-1 starts off and it ends with a saved file which records the iterative decoding trajectories of each failed NMS decoding.
 These records will subsequently be fed into decoding information aggregation (DIA) neural netowork model to generate enhanced reliability metric of codeword bits
 for better post-processing  efficacy of ordered statistics decoding within another module.
