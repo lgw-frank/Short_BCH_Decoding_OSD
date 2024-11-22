@@ -20,5 +20,5 @@ parity-check  matrix or not. Then the saved optimized parity-check matrix on dis
 4) Click Run buttion of entry file BCH_63_training.py, it will optimize parity-check matrix firstly if set_map('generate_extended_parity_check_matrix',False) in 
 globalmap file, then optimization of NMS-1 starts off and it ends with a saved file which records the iterative decoding trajectories of each failed NMS decoding.
 These records will subsequently be fed into decoding information aggregation (DIA) neural netowork model to generate enhanced reliability metric of codeword bits
-for better post-processing  efficacy of ordered statistics decoding.
+for better post-processing  efficacy of ordered statistics decoding within another module.
 
