@@ -1,0 +1,12 @@
+GUIDE:
+1) In globalmap.py file, make sure:    
+set_map('regular_matrix',True)
+set_map('generate_extended_parity_check_matrix',False)
+so that the standard parity-check matrix is utilized.
+2)  In globalmap.py file, setting training hyparameters for DIA model:
+    set_map('initial_learning_rate', 0.001)
+    set_map('decay_rate', 0.95)
+    set_map('decay_step', 500)  
+    set_map('termination_step',2000)
+3) Click Run button in entry Main_DL.py file to optimize the DIA model and save it. Finally,  print out its effect on erroneous bits 
+distribution of most reliable basis (MRB). 
