@@ -1,0 +1,9 @@
+GUIDE:
+1) In lines 36-38 of entry file bch_63_testing.py:
+GL.set_map('decoding_threshold',3000)
+GL.set_map('regular_matrix',False)
+GL.set_map('generate_extended_parity_check_matrix',False)
+It describes at most 3000 decoding errors are collected before terminating collecting action, and the existing optimized
+parity-check matrix is utilized for NMS-1 decoding whose mere optimized parameter will be inherited from corresponding module.
+2) Click Run buttion of entry file bch_63_testing.py, it will decode each data file sequentially, and the failed decoding sequences 
+will be saved in designated files for later post-processing another module.
