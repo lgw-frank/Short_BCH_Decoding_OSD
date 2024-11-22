@@ -2,7 +2,7 @@ import numpy as np
 import globalmap as GL
 import galois
 import pickle
-import random
+import random,os
 from scipy.special import comb
 from collections import Counter
 
@@ -108,7 +108,7 @@ class Code:
         # Simulated annealing parameters
         initial_temp = 1000
         cooling_rate = 0.995
-        num_iterations = 1000
+        num_iterations = 3000
         # Adjust this factor to balance between minimizing 4-cycles and row weight variation
         beta  = 1     
         if GL.get_map('regular_matrix'):
@@ -128,7 +128,7 @@ class Code:
                 redundancy_factor = GL.get_map('redundancy_factor') #redundancy multiplier
                 expected_dim = self.n-self.k                
                 if unique_H.shape[0] > expected_dim:
-                    min_H = self.sort_matrix_by_row_sum(unique_H)[:redundancy_factor*(self.n-self.k),:]
+                    min_H = unique_H
                 else:
                     gap_rows = redundancy_factor*(self.n-self.k-unique_H.shape[0])
                     min_H = unique_H
@@ -142,13 +142,14 @@ class Code:
                 counter_pro = Counter(np.sum(H_optimized,1))
                 print(f'Rank:{expected_rank},{sorted(counter_pro.items())}')
                 self.print_matrix_info(H_optimized)
-                n_dim = self.n               
-                with open('../BCH_'+str(n_dim)+'_training/ckpts/extended_parity_check_matrix.pkl', 'wb') as file:
+                #create the directory if not existing
+                if not os.path.exists('./ckpts/'):
+                    os.makedirs('./ckpts/') 
+                with open('./ckpts/extended_parity_check_matrix.pkl', 'wb') as file:
                     # Use pickle.dump() to write the object to the file
                     pickle.dump(H_optimized, file) 
-            else:   
-                n_dim = self.n 
-                with open('../BCH_'+str(n_dim)+'_training/ckpts/extended_parity_check_matrix.pkl', 'rb') as file:
+            else:    
+                with open('./ckpts/extended_parity_check_matrix.pkl', 'rb') as file:
                     # Use pickle.dump() to write the object to the file
                     H_optimized = pickle.load(file) 
             self.H = H_optimized
@@ -165,28 +166,7 @@ class Code:
             print('Row weight:',self.row_weight_list)
             print('col weight:',self.col_weight_list)
             
-    def sort_matrix_by_row_sum(self,matrix):
-        # Calculate the row sums (number of 1's in each row)
-        row_sums = np.sum(matrix, axis=1)     
-        # Get the sorted indices based on row sums
-        sorted_indices = np.argsort(row_sums)
-        # Reorder the matrix rows based on the sorted indices
-        sorted_matrix = matrix[sorted_indices] 
-        return sorted_matrix
  
-    def get_min_weight_submatrix(self, matrix):
-        # Calculate the row weights (sum of ones in each row)
-        matrix = np.unique(matrix,axis=0)
-        row_weights = np.sum(matrix, axis=1)
-        
-        # Find the minimum row weight
-        min_weight = np.min(row_weights)
-        
-        # Extract rows with the minimum row weight
-        min_weight_rows = matrix[row_weights == min_weight]
-        
-        return min_weight_rows
-
     def print_matrix_info(self,matrix):
         num_cycles = self.count_4_cycles(matrix)
         row_mean, row_std = self.row_weight_variation(matrix)
@@ -246,6 +226,13 @@ class Code:
                     for row in common_non_zero_rows:
                         row_contributions[row] += comb(num_common - 1, 1, exact=True)  # Contribution to 4-cycles    
         return row_contributions        
+
+ 
+    def row_operations(self,new_H,row_index):
+        shift_integers = np.random.randint(1, new_H.shape[1],size=2)
+        new_H[row_index] = np.roll(new_H[row_index], shift_integers[1])
+        return new_H
+       
         
     def simulated_annealing_row_operations(self,H, initial_temp, cooling_rate, num_iterations, beta):
         current_temp = initial_temp
@@ -272,8 +259,7 @@ class Code:
                 break
             row_probs = row_contributions / np.sum(row_contributions)
             row = np.random.choice(new_H.shape[0], p=row_probs)
-            shift_amount = np.random.randint(1, new_H.shape[1])
-            new_H[row] = np.roll(new_H[row], shift_amount)
+            new_H = self.row_operations(new_H,row)
             new_cost = self.cost_function(new_H,beta)        
             # Accept new solution if it's better or with a certain probability if it's worse
             if new_cost < best_cost or random.uniform(0, 1) < np.exp((current_cost - new_cost) / current_temp):
@@ -286,112 +272,7 @@ class Code:
             # Cool down
             current_temp *= cooling_rate  
         return best_H, best_cost
- #***************************************************************************************************#       
-    def filter_min_weight(self,matrix,expected_rank):
-        unique_matrix = np.unique(matrix, axis=0)    
-        while True:
-            reduced_matrix = self.exclude_max_weight(unique_matrix)
-            _,reduced_rank = self.row_reduce_gf(reduced_matrix)
-            if reduced_rank == expected_rank:
-                unique_matrix = reduced_matrix
-            else:
-                #adding rows to supplement deficit rank
-                new_reduced_matrix = self.supplement_rows(unique_matrix,reduced_matrix,expected_rank,reduced_rank)
-                break
-        _,min_rank = self.row_reduce_gf(new_reduced_matrix)
-        print(f'Min matrix: rank: {min_rank} shape: {new_reduced_matrix.shape}')
-        return new_reduced_matrix
-
-    def append_cyclic_shift_with_rank_check(self,matrix,expected_rank):
-        _,previous_rank = self.row_reduce_gf(matrix)  # Calculate original matrix rank
-        new_matrix = matrix.copy()   
-        counter = previous_rank
-        for i in range(3*expected_rank): # 3 times attempts in acquiring full rank parity check matrix
-            # Randomly select a row index and cyclically shift it
-            row_index = np.random.randint(0, matrix.shape[0])
-            row = matrix[row_index]
-            shift = np.random.randint(1, len(row))  # Random shift (excluding no shift)
-            shifted_row = np.roll(row, shift)           
-            # Temporarily append the shifted row
-            temp_matrix = np.vstack([new_matrix, shifted_row])          
-            # Check if the rank of the new matrix has increased
-            _,new_rank = self.row_reduce_gf(temp_matrix)
-            if new_rank > previous_rank:
-                # Append the shifted row to the matrix if the rank increased
-                new_matrix = temp_matrix
-                counter += 1
-                previous_rank = new_rank
-            if counter == expected_rank:
-                break
-        return new_matrix
-              
-    def supplement_rows(self,original_matrix,reduced_matrix,expected_rank,reduced_rank):
-        counter = Counter(np.sum(original_matrix,axis=1))
-        # Get all the keys and sort them
-        sorted_keys = sorted(counter.keys())
-        max_current_key = max(np.sum(reduced_matrix,axis=1))
-        for element in sorted_keys:
-            if element > max_current_key:
-                chosen_weight = element
-                break
-        filtered_matrix = self.collect_given_weight(original_matrix,chosen_weight)
-        # Shuffle the rows
-        np.random.shuffle(filtered_matrix)
-        gap = 2*(reduced_matrix.shape[1] - reduced_rank)
-        # Append the new row to the matrix
-        replenished_matrix = np.vstack([reduced_matrix, filtered_matrix[:gap]])
-        return replenished_matrix
-            
-        
-    def collect_given_weight(self,matrix,weight):
-        #matrix = self.remove_circular_duplicates(matrix)
-        # Calculate the sum of each row
-        new_matrix = matrix.copy()
-        row_sums = np.sum(new_matrix, axis=1)  
-        # Create a boolean mask where True corresponds to rows with the minimum sum
-        mask = (row_sums == weight)
-        # Use the mask to filter out the rows
-        filtered_matrix = new_matrix[mask]
-        return filtered_matrix        
-        
-    
-    def exclude_max_weight(self,matrix):
-        #matrix = self.remove_circular_duplicates(matrix)
-        # Calculate the sum of each row
-        new_matrix = matrix.copy()
-        row_sums = np.sum(new_matrix, axis=1)
-        # Find the minimum row sum
-        max_row_sum = np.max(row_sums)   
-        # Create a boolean mask where True corresponds to rows with the minimum sum
-        mask = (row_sums != max_row_sum)
-        # Use the mask to filter out the rows
-        filtered_matrix = new_matrix[mask]
-        return filtered_matrix
-    
-    def remove_rows_if_rank_unchanged(self,H_matrix):
-        _,original_rank = self.row_reduce_gf(H_matrix)
-        # Calculate row contributions to 4-cycles
-        row_contributions = self.get_row_cycle_contributions(H_matrix)   
-        # Get the indices that would sort the rows by descending row weight
-        sorted_indices = np.argsort(-row_contributions)       
-        # Rearrange the matrix based on these sorted indices
-        sorted_matrix = H_matrix[sorted_indices]
-        counter = 0
-        temp_tensor = sorted_matrix.copy()
-        while True:
-            if counter >= temp_tensor.shape[0]:
-                break
-            temp_tensor = np.delete(H_matrix, counter, axis=0)        
-            # Calculate the rank of the new tensor
-            _,new_rank = self.row_reduce_gf(temp_tensor)            
-            # If the rank is unchanged, remove the row; otherwise, continue
-            if original_rank == new_rank:                   
-                H_matrix = temp_tensor
-            else:
-                counter += 1
-        return H_matrix
-                
-                
+                           
     def lexicographically_smallest_rotation(self,row):
         """Find the lexicographically smallest rotation of a row."""
         rotations = [np.roll(row, i) for i in range(len(row))]
@@ -405,18 +286,6 @@ class Code:
         print(sorted(counter_pro.items()))
         return unique_matrix
 
-    def find_reduced_rows_initial(self,base_H,matrix_sum,range_start):
-        row_sum_list = np.sum(matrix_sum,1)
-        min_updated_value = min(row_sum_list[range_start+1:])
-        new_row_list = []
-        if np.sum(base_H[range_start]) <= min_updated_value:
-            indices = [range_start]
-            new_row_list.append(base_H[range_start])
-        else:
-            indices = [i for i, value in enumerate(row_sum_list) if value == min_updated_value]
-            for j in indices:
-                new_row_list.append(matrix_sum[j])
-        return new_row_list
 
     def find_reduced_rows_advance(self,matrix_cmp,range_start):
         base_row = matrix_cmp[range_start:range_start+1]
@@ -482,7 +351,6 @@ class Code:
                 new_row_list.append(original_ref_H[i])
         reduce_H_matrix = np.reshape(new_row_list,[-1,original_ref_H.shape[1]])
         # remove duplicated and shifted rows
-        #unique_H_matrix = self.remove_rows_if_rank_unchanged(reduce_H_matrix)
         unique_H_matrix = self.remove_circular_duplicates(reduce_H_matrix)
         #verify ths syndrome equal to all-zero matrix
         syndrome_result = unique_H_matrix.dot(self.G.T)%2
@@ -500,7 +368,6 @@ class Code:
             new_matrix_list = new_matrix_list + row_candidates
         reduce_H_matrix = np.reshape(new_matrix_list,[-1,unique_ref_H.shape[1]])      
         # remove duplicated and shifted rows
-        #unique_ref_H = self.remove_rows_if_rank_unchanged(reduce_H_matrix)
         unique_ref_H = self.remove_circular_duplicates(reduce_H_matrix)
         syndrome_result = unique_ref_H.dot(self.G.T)%2
         if np.all(syndrome_result==0):
