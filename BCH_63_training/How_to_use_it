@@ -1,1 +1,24 @@
+GUIDE:
+1) This module plays a dual-role. For one, it optimizes the standard parity-check matrix into a redundant new matrix with a reduced-density, and save
+it for further usages by other modules. For another, it optimizes the mere paramater of normalized min-sum to shorten the gap between min-sum and BP decodings.
+2) At line 14 of entry file BCH_63_training.py: "sys.argv = "python 2.6 2.6 100 100 4 BCH_63_45_3_strip.alist NMS-1".split()",
+It describes to use the already generated training data of 100 batches of min-batch size 100 at SNR=2.6-2.6dB to train NMS-1(only one parameter to train)
+whose maximum iterations settting is 4.
+3) In fill_matrix_info.py file, the optmization of parity-check file is impmeneted with simulated annealing heuristic to reudce column weigth discrepancy and 
+number of short cycles, besides the reduction of non-zero density. In lines 109-113:
+        initial_temp = 1000
+        cooling_rate = 0.995
+        num_iterations = 3000
+        # Adjust this factor to balance between minimizing 4-cycles and row weight variation
+        beta  = 1   
+These hyper-parameters for simualated annealing are subject to needs certainly. 
+Notably, the switches lines 48 and 49  in globalmap.py file must be turned on before optmization:
+    set_map('regular_matrix',False)
+    set_map('generate_extended_parity_check_matrix',True)
+Afterwards, turning off the switch at line 49 forever: set_map('generate_extended_parity_check_matrix',False) while line 48 is the switch to decide using standard 
+parity-check  matrix or not. Then the saved optimized parity-check matrix on disk will be called by other modules if needed.
+4) Click Run buttion of entry file BCH_63_training.py, it will optimize parity-check matrix firstly if set_map('generate_extended_parity_check_matrix',False) in 
+globalmap file, then optimization of NMS-1 starts off and it ends with a saved file which records the iterative decoding trajectories of each failed NMS decoding.
+These records will subsequently be fed into decoding information aggregation (DIA) neural netowork model to generate enhanced reliability metric of codeword bits
+for better post-processing  efficacy of ordered statistics decoding.
 
