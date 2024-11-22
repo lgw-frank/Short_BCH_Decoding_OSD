@@ -1,0 +1,7 @@
+GUIDE:
+1) In the entry file Main_test.py, line 23 writes:
+sys.argv = "python 0.0 3.5 8 100 100 BCH_63_45_3_strip.alist".split()
+It describes total 8 testing data files are generated for the 8 SNRs distribued evenly between SNR=0.0-3.5dB, with the 100 batches of
+mini-batch size 100 for the rightmost 3.5dB, and the data sizes for other SNR  points are proportional to the setting in line 51:
+GL.set_map('portion_dis', '0.1 0.1 0.3 0.3 0.3 0.5 0.5 0.5 0.6 0.6 0.75 0.75 1') #for generating testing data of various sizes
+2) Click Run button of Main_test.py, it will end up with generated files stored in the designated directory.
