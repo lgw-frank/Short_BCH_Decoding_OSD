@@ -1,0 +1,8 @@
+GUIDE:
+1) At line 17 in the entry file Main_train.py: "sys.argv = "python 2.6 2.6 100 100 BCH_63_45_3_strip.alist".split()",
+It describes training data consisting of 100 batches of mini-batch size 100 is created at SNR = 2.6-2.6dB using standard (NOT omptized) parity-check matrix file BCH_63_45_3_strip.alist
+in current directory. 
+2) At line 30 in the entry file Main_train.py:: GL.set_map('ALL_ZEROS_CODEWORD_TRAINING', False)
+It further describes the training data is generated for various non-allzero codewords annoyed by AWGN channel noise, hence the generator matrix, inferred in fill_matrix_info.py
+using available parity-check matrix, is requested to encode non-zero messages into codewords.
+3) Click the Run button of  Main_train.py file will generate the named training data in the designated directory. 
