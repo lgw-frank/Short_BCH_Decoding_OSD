@@ -1,0 +1,4 @@
+GUIDE:
+1) In line 13 of entry file Main_DL_OSD.py :
+sys.argv = "python 0.0 3.5 8 100 4 BCH_63_45_3_strip.alist NMS-1".split()
+It decribes these files recording the failed NMS decoding sequnences in BCH_63_testing module are processed sequentially in this module
