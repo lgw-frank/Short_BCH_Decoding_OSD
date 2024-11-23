@@ -1,5 +1,5 @@
 # Short_BCH_Decoding_OSD
-For the project, it adopts the architecture of NMS+DIA+OSD, holding the benefits of low-complexity low-latency,
+For this project, it adopts the architecture of NMS+DIA+OSD, holding the benefits of low-complexity low-latency,
 high decoding performance and indepedence of noise variance estimation etc.
 The related manuscript entitled 'Iterative Decoding of Short BCH Codes and its Post-processing' is:
 https://arxiv.org/abs/2411.13876
