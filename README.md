@@ -17,7 +17,7 @@ NMS decoding failures included.
 step 5 using ordered statistics decoding.
 
 Notice: Some packages need to be installed for these modules to execute properly, say galois, pickle collections, etc. We run
-above modules on spyder 5.* using python 3.7 of tensorflow 2.X.
+above modules on spyder 5.2.2 using python 3.7 of tensorflow 2.X.
 
 
 
