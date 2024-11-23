@@ -16,5 +16,8 @@ NMS decoding failures included.
 6)DL_OSD_Testing module utilzes trained DIA model of step 3 and post-processes decoding failure files of 
 step 5 using ordered statistics decoding.
 
+Notice: Some packages need to be installed for these modules to execute properly, say galois, pickle collections, etc. We run
+above modules on spyder 5.* using tensorflow 2.X.
+
 
 
