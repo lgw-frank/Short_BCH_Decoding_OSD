@@ -6,3 +6,7 @@ It decribes these files recording the failed NMS decoding sequnences in BCH_63_t
 DIA = True
 It allows the DIA model to be utilized to yield output to feed  the succeeded conventional OSD. Otherwise, 
 the orignal input are fed into the conventional OSD directly.
+3) In line 49 of globalmap.py file:
+    set_map('threshold_order',1)     #threshold for number of non-zero elements across MRB
+It describes the targed order p for OSD. Notably, larger setting implies surging complexity involved due to substantial increase of number
+of error patterns covered.
