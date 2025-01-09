@@ -1,5 +1,11 @@
 # Short_BCH_Decoding_OSD
-For this project, it adopts the architecture of NMS+DIA+OSD, holding the benefits of low-complexity low-latency,
+For the project focusing on parallel decoding of NMS for BCH codes of block length 63 and 127, refer to the weblink:
+[Effective Application of Normalized Min-Sum Decoding for BCH Codes](https://arxiv.org/abs/2412.20828), the related subdirectories 
+are Training_data_gen_63, Tesing_data_gen_63, BCH_63_training and BCH_63_testing in the main directory, 
+while altering the string '63' of these subdirectories to '127' and replacing the arguments with these matched to BCH codes of length 127
+will work without modifying code itself.
+
+For the extened project to adopt hybrid rchitecture of NMS+DIA+OSD, holding the benefits of low-complexity low-latency,
 high decoding performance and indepedence of noise variance estimation etc.
 The related manuscript entitled 'Iterative Decoding of Short BCH Codes and its Post-processing' is:
 https://arxiv.org/abs/2411.13876
