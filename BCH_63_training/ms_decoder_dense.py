@@ -135,7 +135,7 @@ class Decoder_Layer(tf.keras.layers.Layer):
         cv_matrix = normalized_tensor*result_matrix*tf.stop_gradient(result_sign_matrix)         
         return cv_matrix
     
-    def calculation_loss(self,soft_output,labels,loss):
+    def calculation_loss(self,soft_output,labels):
          #cross entroy
         penalty_weight = GL.get_map('penalty_weight')
         labels = tf.cast(labels,tf.float32)
@@ -264,7 +264,7 @@ class Decoder_Layer(tf.keras.layers.Layer):
         # get output for this iteration
         soft_output = self.marginalize(cv_matrix, super_input,shifted_integers,labels,iteration,soft_output_list)  
         iteration += 1   
-        loss = self.calculation_loss(soft_output,labels,0.)
+        loss = self.calculation_loss(soft_output,labels)
         return soft_output_list, loss,labels, iteration
 
 def retore_saved_model(restore_ckpts_dir,restore_step,ckpt_nm):
